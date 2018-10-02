@@ -16,13 +16,13 @@ type Claims interface {
 // https://tools.ietf.org/html/rfc7519#section-4.1
 // See examples for how to use this with your own claim types
 type StandardClaims struct {
-	Audience  string `json:"aud,omitempty"`
-	ExpiresAt int64  `json:"exp,omitempty"`
-	Id        string `json:"jti,omitempty"`
-	IssuedAt  int64  `json:"iat,omitempty"`
-	Issuer    string `json:"iss,omitempty"`
-	NotBefore int64  `json:"nbf,omitempty"`
-	Subject   string `json:"sub,omitempty"`
+	Audience  string  `json:"aud,omitempty"`
+	ExpiresAt float64 `json:"exp,omitempty"`
+	Id        string  `json:"jti,omitempty"`
+	IssuedAt  float64 `json:"iat,omitempty"`
+	Issuer    string  `json:"iss,omitempty"`
+	NotBefore float64 `json:"nbf,omitempty"`
+	Subject   string  `json:"sub,omitempty"`
 }
 
 // Validates time based claims "exp, iat, nbf".
@@ -36,7 +36,7 @@ func (c StandardClaims) Valid() error {
 	// The claims below are optional, by default, so if they are set to the
 	// default value in Go, let's not fail the verification for them.
 	if c.VerifyExpiresAt(now, false) == false {
-		delta := time.Unix(now, 0).Sub(time.Unix(c.ExpiresAt, 0))
+		delta := time.Unix(now, 0).Sub(time.Unix(int64(c.ExpiresAt), 0))
 		vErr.Inner = fmt.Errorf("token is expired by %v", delta)
 		vErr.Errors |= ValidationErrorExpired
 	}
@@ -67,13 +67,13 @@ func (c *StandardClaims) VerifyAudience(cmp string, req bool) bool {
 // Compares the exp claim against cmp.
 // If required is false, this method will return true if the value matches or is unset
 func (c *StandardClaims) VerifyExpiresAt(cmp int64, req bool) bool {
-	return verifyExp(c.ExpiresAt, cmp, req)
+	return verifyExp(int64(c.ExpiresAt), cmp, req)
 }
 
 // Compares the iat claim against cmp.
 // If required is false, this method will return true if the value matches or is unset
 func (c *StandardClaims) VerifyIssuedAt(cmp int64, req bool) bool {
-	return verifyIat(c.IssuedAt, cmp, req)
+	return verifyIat(int64(c.IssuedAt), cmp, req)
 }
 
 // Compares the iss claim against cmp.
@@ -85,7 +85,7 @@ func (c *StandardClaims) VerifyIssuer(cmp string, req bool) bool {
 // Compares the nbf claim against cmp.
 // If required is false, this method will return true if the value matches or is unset
 func (c *StandardClaims) VerifyNotBefore(cmp int64, req bool) bool {
-	return verifyNbf(c.NotBefore, cmp, req)
+	return verifyNbf(int64(c.NotBefore), cmp, req)
 }
 
 // ----- helpers
